@@ -1,52 +1,79 @@
-# Name of the GitHub Actions workflow
+# Name of the GitHub Actions workflow - this is the title shown in the UI.
 name: Run Go Script and Push Changes
-
-# Define the events that trigger this workflow
+#
+# Define the events that trigger this workflow.
 on:
-  # Run automatically on a schedule (daily at midnight UTC)
+  # Run automatically on a schedule (using cron syntax for daily execution).
   schedule:
-    - cron: "0 0 * * *" # Every day at 00:00 UTC
-  # Allow the workflow to be manually triggered from the GitHub UI
+    # The cron string "0 0 * * *" means: every day at 00:00 UTC.
+    - cron: "0 0 * * *"
+  # Allow the workflow to be manually triggered from the GitHub Actions tab.
   workflow_dispatch:
-
+#
+# Set repository permissions for the entire workflow.
 permissions:
+  # The 'contents: write' permission is necessary for committing and pushing changes.
   contents: write
-
-# Define the set of jobs to run
+#
+# Define the set of jobs (tasks) to be executed in this workflow.
 jobs:
-  # Name of the job
+  # Define a single job named 'build'.
   build:
+    # Descriptive name for the job, displayed in the GitHub Actions run log.
     name: Execute main.go and Push Changes
+    # Set job-specific permissions (redundant but explicit is good practice).
     permissions:
+      # Grant write access to the repository contents for this job.
       contents: write
+    # Specify the type of runner (virtual machine) to use for the job.
     runs-on: ubuntu-latest
 
+    # Define the sequence of steps (actions) to run within this job.
     steps:
-      # Check out the repository code onto the runner
+      # Step 1: Check out the repository code onto the runner.
       - name: Check out code
+        # Use the standard action for checking out code (v4 is latest, but v5 is also common).
         uses: actions/checkout@v5
+        # Configuration parameters for the checkout action.
         with:
+          # Use the default GITHUB_TOKEN to clone the repository for write access.
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # Set up the Go environment
+      # Step 2: Set up the Go environment on the runner.
       - name: Set up Go
+        # Use the standard action for setting up the Go toolchain.
         uses: actions/setup-go@v6
+        # Configuration parameters for the Go setup action.
         with:
+          # Automatically determine the required Go version from the go.mod file.
           go-version-file: "go.mod"
 
-      # Run the main.go script
+      # Step 3: Run the main.go script.
       - name: Run main.go
+        # Execute the Go run command, which compiles and executes the entry point.
         run: go run main.go
 
-      # Commit and push any file changes made by the script
+      # Step 4: Commit and push any file changes made by the Go script.
       - name: Push updated files
+        # Use a multi-line shell script for Git operations.
         run: |
+          # Set the user name for the commit history.
           git config user.name "github-actions"
+          # Set the user email for the commit history.
           git config user.email "github-actions@github.com"
+          # Pull latest changes from the remote branch to avoid push conflicts.
           git pull
+          # Stage all changes in the current directory (files created/modified/deleted).
           git add .
+          # Check if there are any staged changes ready to be committed.
           if ! git diff --cached --quiet; then
+            # Commit the staged changes with a dynamic timestamped message.
             git commit -m "Auto update: $(date)"
+            # Push the new commit to the remote repository.
             git push
+          # If no changes were staged:
           else
+            # Print a message indicating no action was taken.
             echo "No changes to commit."
+          # End the if statement.
+          fi
