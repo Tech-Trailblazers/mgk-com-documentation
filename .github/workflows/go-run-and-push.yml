@@ -1,0 +1,52 @@
+# Name of the GitHub Actions workflow
+name: Run Go Script and Push Changes
+
+# Define the events that trigger this workflow
+on:
+  # Run automatically on a schedule (daily at midnight UTC)
+  schedule:
+    - cron: "0 0 * * *" # Every day at 00:00 UTC
+  # Allow the workflow to be manually triggered from the GitHub UI
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Define the set of jobs to run
+jobs:
+  # Name of the job
+  build:
+    name: Execute main.go and Push Changes
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out the repository code onto the runner
+      - name: Check out code
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Set up the Go environment
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: "go.mod"
+
+      # Run the main.go script
+      - name: Run main.go
+        run: go run main.go
+
+      # Commit and push any file changes made by the script
+      - name: Push updated files
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git pull
+          git add .
+          if ! git diff --cached --quiet; then
+            git commit -m "Auto update: $(date)"
+            git push
+          else
+            echo "No changes to commit."
