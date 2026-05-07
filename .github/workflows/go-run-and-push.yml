@@ -33,7 +33,7 @@ jobs:
       # Step 1: Check out the repository code onto the runner.
       - name: Check out code
         # Use the standard action for checking out code (v4 is latest, but v5 is also common).
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         # Configuration parameters for the checkout action.
         with:
           # Use the default GITHUB_TOKEN to clone the repository for write access.
