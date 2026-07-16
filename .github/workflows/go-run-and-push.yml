@@ -42,7 +42,7 @@ jobs:
       # Step 2: Set up the Go environment on the runner.
       - name: Set up Go
         # Use the standard action for setting up the Go toolchain.
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         # Configuration parameters for the Go setup action.
         with:
           # Automatically determine the required Go version from the go.mod file.
